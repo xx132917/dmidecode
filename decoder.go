@@ -33,6 +33,8 @@ func New() (*Decoder, error) {
 			d.baseBoard = append(d.baseBoard, ss[i])
 		case smbios.Chassis:
 			d.chassis = append(d.chassis, ss[i])
+		case smbios.OnBoardDevices:
+			d.onBoardDevice = append(d.onBoardDevice, ss[i])
 		case smbios.OnBoardDevicesExtendedInformation:
 			d.onBoardDevices = append(d.onBoardDevices, ss[i])
 		case smbios.PortConnector:
@@ -62,6 +64,7 @@ type Decoder struct {
 	system              []*smbios.Structure
 	baseBoard           []*smbios.Structure
 	chassis             []*smbios.Structure
+	onBoardDevice       []*smbios.Structure
 	onBoardDevices      []*smbios.Structure
 	portConnector       []*smbios.Structure
 	processor           []*smbios.Structure
@@ -136,6 +139,21 @@ func (d *Decoder) Onboard() ([]*onboard.ExtendedInformation, error) {
 			return nil, err
 		}
 		infos = append(infos, info)
+	}
+
+	return infos, nil
+}
+
+// Onboard 解析onboard信息
+func (d *Decoder) OnboardDevice() ([]string, error) {
+	infos := make([]string, 0, len(d.onBoardDevices))
+	for i := range d.onBoardDevice {
+		if d.onBoardDevice[i].Strings == nil {
+			continue
+		}
+		for _, desc := range d.onBoardDevice[i].Strings {
+			infos = append(infos, desc)
+		}
 	}
 
 	return infos, nil
